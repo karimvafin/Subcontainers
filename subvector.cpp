@@ -1,26 +1,37 @@
 #include <iostream>
 using namespace std;
 
-struct subvector
+class subvector
 {
+public:
+    subvector();
+    ~subvector();
+    bool resize(unsigned int new_capacity);
+    bool push_back(int d);
+private:
     int *mas;
     unsigned int top;
     unsigned int capacity;
 };
 
-bool init(subvector *qv)
+subvector::subvector()
 {
-    qv->capacity = 0;
-    qv->top = 0;
-    qv->mas = nullptr;
+    this->capacity = 0;
+    this->top = 0;
+    this->mas = nullptr;
     return true;
 }
 
-bool resize(subvector *qv, unsigned int new_capacity)
+subvector::~subvector()
+{
+    delete [] this->mas;
+}
+
+bool resize(unsigned int new_capacity)
 {
     if (new_capacity > 0)
     {
-        if (new_capacity >= qv->capacity)
+        if (new_capacity >= this->capacity)
         {
             int *a = new int[new_capacity];
             for (int i = 0; i < qv->top; i++)
@@ -39,7 +50,7 @@ bool resize(subvector *qv, unsigned int new_capacity)
     }
 }
 
-bool push_back(subvector *qv, int d)
+bool push_back(int d)
 {
     if (qv->capacity <= qv->top)
         resize(qv, (qv->capacity + 5));
@@ -89,4 +100,9 @@ void destructor(subvector *qv)
 {
     delete[] qv->mas;
     init(qv);
+}
+
+int main()
+{
+    b = 10;
 }
