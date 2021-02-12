@@ -1,11 +1,6 @@
 #include <iostream>
 using namespace std;
 
-struct subforwardlist
-{
-    int data;
-    subforwardlist *next;
-};
 
 class subclass
 {
@@ -21,6 +16,11 @@ public:
     bool erase_where(unsigned int where);
     void print();
 private:
+    struct subforwardlist
+    {
+        int data;
+        subforwardlist *next;
+    };
     subforwardlist *start;
 };
 
