@@ -1,21 +1,42 @@
 #include <iostream>
 using namespace std;
 
-struct subset_node
+// Закомменченные функции и структура данных list относятся к функции BFS, которая в
+// настоящий момент времени не рефакторена
+
+class subset_class
 {
-    int key;
-    subset_node *left;
-    subset_node *right;
+private:
+    struct subset_node
+    {
+        int key;
+        subset_node *left;
+        subset_node *right;
+    };
+    struct list
+    {
+        subset_node *tree;
+        list *next;
+        list *prev;
+    };
+    subset_node* root;
+    void destructor(subset_node* sn);
+    unsigned int size1(subset_node *sn);
+    void add(subset_node *sn, int *mas, int *i);
+    unsigned int height1(subset_node* sn);
+public:
+    subset_class();
+    ~subset_class();
+    bool insert(int k);
+    bool remove(int k);
+    bool find(int k);
+    unsigned int size();
+    unsigned int height();
+    void DFS();
 };
 
-struct list
-{
-    subset_node *tree;
-    list *next;
-    list *prev;
-};
 
-void push_tree (list *l, subset_node *sn)
+/*void push_tree (list *l, subset_node *sn)
 {
     if (l == nullptr)
     {
@@ -49,22 +70,61 @@ subset_node* get_tree (list **l)
             (*l)->prev = nullptr;
         return newsub;
     }
+}*/
+
+subset_class::subset_class()
+{
+    this->root = nullptr;
 }
 
-bool init(subset_node **sn)
+void subset_class::destructor(subset_node* sn)
 {
-    *sn = nullptr;
-    return true;
-}
-
-bool insert(subset_node **sn, int k)
-{
-    if (*sn == nullptr)
+    if (sn == nullptr)
+        return;
+    else
     {
-        *sn = new subset_node;
-        (*sn)->left = nullptr;
-        (*sn)->right = nullptr;
-        (*sn)->key = k;
+        if (sn->left == nullptr && sn->right == nullptr)
+        {
+            delete sn;
+        }
+        else
+        {
+            destructor(sn->left);
+            destructor(sn->right);
+            delete sn;
+            return;
+        }
+    }
+}
+
+subset_class::~subset_class()
+{
+    if (this->root == nullptr)
+        return;
+    else
+    {
+        if (this->root->left == nullptr && this->root->right == nullptr)
+        {
+            delete this->root;
+        }
+        else
+        {
+            this->destructor(this->root->left);
+            this->destructor(this->root->right);
+            delete this->root;
+            return;
+        }
+    }
+}
+
+bool subset_class::insert(int k)
+{
+    if (this->root == nullptr)
+    {
+        this->root = new subset_node;
+        this->root->left = nullptr;
+        this->root->right = nullptr;
+        this->root->key = k;
         return true;
     }
     else
@@ -73,7 +133,7 @@ bool insert(subset_node **sn, int k)
         newsn->key = k;
         newsn->left = nullptr;
         newsn->right = nullptr;
-        subset_node *tmp = *sn;
+        subset_node *tmp = this->root;
         while (true)
         {
             if (k == tmp->key)
@@ -111,29 +171,29 @@ bool insert(subset_node **sn, int k)
     }
 }
 
-bool remove(subset_node **sn, int k)
+bool subset_class::remove(int k)
 {
-    if (*sn == nullptr)
+    if (this->root == nullptr)
         return false;
-    if ((*sn)->key == k)
+    if (this->root->key == k)
     {
-        subset_node *tmpR = (*sn)->right;
-        subset_node *tmpL = (*sn)->left;
-        delete *sn;
+        subset_node *tmpR = this->root->right;
+        subset_node *tmpL = this->root->left;
+        delete this->root;
         if (tmpR)
         {
-            *sn = tmpR;
+            this->root = tmpR;
             while (tmpR->left)
                 tmpR = tmpR->left;
             tmpR->left = tmpL;
         }
         else
-            *sn = tmpL;
+            this->root = tmpL;
         return true;
     }
     else
     {
-        subset_node *tmp = *sn;
+        subset_node *tmp = this->root;
         while (true)
         {
             if (k < tmp->key)
@@ -200,35 +260,36 @@ bool remove(subset_node **sn, int k)
     }
 }
 
-subset_node* find(subset_node *sn, int k)
+bool subset_class::find(int k)
 {
-    if (sn == nullptr)
-        return nullptr;
+    if (this->root == nullptr)
+        return false;
     else
     {
+        subset_node* sn = this->root;
         while (true)
         {
             if (k == sn->key)
-                return sn;
+                return true;
             if (k > sn->key)
             {
                 sn = sn->right;
                 if (sn == nullptr)
-                    return nullptr;
+                    return false;
                 continue;
             }
             if (k < sn->key)
             {
                 sn = sn->left;
                 if (sn == nullptr)
-                    return nullptr;
+                    return false;
                 continue;
             }
         }
     }
 }
 
-unsigned int size(subset_node *sn)
+unsigned int subset_class::size1(subset_node *sn)
 {
     unsigned int k = 0;
     if (sn == nullptr)
@@ -238,13 +299,30 @@ unsigned int size(subset_node *sn)
     else
     {
         k++;
-        k += size(sn->right);
-        k += size(sn->left);
+        k += size1(sn->right);
+        k += size1(sn->left);
         return k;
     }
 }
 
-unsigned int height(subset_node *sn)
+unsigned int subset_class::size()
+{
+    unsigned int k = 0;
+    subset_node* sn = this->root;
+    if (sn == nullptr)
+        return 0;
+    if (sn->left == nullptr && sn->right == nullptr)
+        return 1;
+    else
+    {
+        k++;
+        k += size1(sn->right);
+        k += size1(sn->left);
+        return k;
+    }
+}
+
+unsigned int subset_class::height1(subset_node *sn)
 {
     unsigned int k = 0;
     if (sn == nullptr)
@@ -254,8 +332,8 @@ unsigned int height(subset_node *sn)
     else
     {
         k++;
-        unsigned int a1 = height(sn->left);
-        unsigned int a2 = height(sn->right);
+        unsigned int a1 = height1(sn->left);
+        unsigned int a2 = height1(sn->right);
         if (a1 < a2)
             k += a2;
         else
@@ -264,27 +342,28 @@ unsigned int height(subset_node *sn)
     }
 }
 
-void destructor (subset_node *sn)
+unsigned int subset_class::height()
 {
+    subset_node* sn = this->root;
+    unsigned int k = 0;
     if (sn == nullptr)
-        return;
+        return k;
+    if (sn->left == nullptr && sn->right == nullptr)
+        return 1;
     else
     {
-        if (sn->left == nullptr && sn->right == nullptr)
-        {
-            delete sn;
-        }
+        k++;
+        unsigned int a1 = height1(sn->left);
+        unsigned int a2 = height1(sn->right);
+        if (a1 < a2)
+            k += a2;
         else
-        {
-            destructor(sn->left);
-            destructor(sn->right);
-            delete sn;
-            return;
-        }
+            k += a1;
+        return k;
     }
 }
 
-void add(subset_node *sn, int *mas, int *i)
+void subset_class::add(subset_node *sn, int *mas, int *i)
 {
     if (!sn)
         return;
@@ -294,15 +373,19 @@ void add(subset_node *sn, int *mas, int *i)
     add(sn->right, mas, i);
 }
 
-int* DFS(subset_node *sn)
+void subset_class::DFS()
 {
-    int *mas = new int[size(sn)];
+    subset_node* sn = this->root;
+    int *mas = new int[this->size()];
     int i = 0;
     add(sn, mas, &i);
-    return mas;
+    for(int j = 0; j < i; j++)
+        cout << mas[j] << " ";
+    delete [] mas;
+    cout << endl;
 }
 
-void processing (subset_node *sn, int *mas, int *k, list *l)
+/*void processing (subset_node *sn, int *mas, int *k, list *l)
 {
     mas[*k] = sn->key;
     (*k)++;
@@ -330,4 +413,53 @@ int* BFS(subset_node *sn)
         while (l != nullptr);
         return mas;
     }
+}*/
+
+int main()
+{
+    subset_class tree;
+
+    //checking insert
+
+    tree.insert(60);
+    tree.insert(90);
+    tree.insert(50);
+    tree.insert(91);
+    tree.insert(6);
+    tree.insert(9);
+    tree.insert(3);
+    tree.insert(2);
+
+    tree.DFS();
+
+    //checking remove
+
+    /*tree.remove(60);
+    tree.remove(90);
+    tree.remove(1);
+    tree.remove(60);
+    tree.remove(3);
+    tree.remove(60);
+
+    tree.DFS();*/
+
+    //checking find
+
+    cout << tree.find(2) << " ";
+    cout << tree.find(7) << " ";
+    cout << tree.find(6) << " ";
+    cout << tree.find(91) << " ";
+    cout << tree.find(49) << endl;
+
+    //checking size && height
+
+    cout << tree.size() << " " << tree.height() << endl;
+    tree.insert(5);
+    tree.insert(100);
+    cout << tree.size() << " " << tree.height() << endl;
+    tree.remove(91);
+    tree.remove(6);
+    cout << tree.size() << " " << tree.height() << endl;
+
+    return 0;
 }
