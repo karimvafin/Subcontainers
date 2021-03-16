@@ -1,67 +1,51 @@
 #include <iostream>
 using namespace std;
 
-
-class subclass
+struct subforwardlist
 {
-public:
-    subclass();
-    ~subclass();
-    bool push_back(int d);
-    int pop_back();
-    bool push_forward(int d);
-    int pop_forward();
-    unsigned int size();
-    bool push_where(unsigned int where, int d);
-    bool erase_where(unsigned int where);
-    void print();
-private:
-    struct subforwardlist
-    {
-        int data;
-        subforwardlist *next;
-    };
-    subforwardlist *start;
+    int data;
+    subforwardlist *next;
 };
 
-subclass::subclass()
+void clear(subforwardlist **sfl)
 {
-    this->start = nullptr;
-}
-
-subclass::~subclass()
-{
-    if (this->start == nullptr)
+    if (*sfl == nullptr)
         return;
     else
     {
-        subforwardlist *tmp = this->start;
-        while (this->start->next)
+        subforwardlist *tmp = *sfl;
+        while ((*sfl)->next)
         {
             while (tmp->next->next)
                 tmp = tmp->next;
             delete tmp->next;
             tmp->next = nullptr;
-            tmp = this->start;
+            tmp = *sfl;
         }
-        delete this->start;
-        this->start = nullptr;
+        delete *sfl;
+        *sfl = nullptr;
     }
 }
 
-
-bool subclass::push_back(int d)
+bool init(subforwardlist **sfl)
 {
-    if(this->start == nullptr)
+    *sfl = nullptr;
+    return true;
+
+}
+
+bool push_back(subforwardlist **sfl, int d)
+{
+    if(*sfl == nullptr)
     {
-        this->start = new subforwardlist;
-        this->start->data = d;
-        this->start->next = nullptr;
+        *sfl = new subforwardlist;
+        (*sfl)->data = d;
+        (*sfl)->next = nullptr;
         return true;
     }
     else
     {
-        subforwardlist *tmp = this->start;
+        subforwardlist *tmp = *sfl;
         while(tmp->next)
             tmp = tmp->next;
         auto newsfl = new subforwardlist;
@@ -72,20 +56,20 @@ bool subclass::push_back(int d)
     }
 }
 
-int subclass::pop_back()
+int pop_back(subforwardlist **sfl)
 {
-    if(this->start == nullptr)
+    if(*sfl == nullptr)
         return 0;
-    if(this->start->next == nullptr)
+    if((*sfl)->next == nullptr)
     {
-        int d = this->start->data;
-        delete this->start;
-        this->start = nullptr;
+        int d = (*sfl)->data;
+        delete *sfl;
+        *sfl = nullptr;
         return d;
     }
     else
     {
-        subforwardlist *tmp = this->start;
+        subforwardlist *tmp = *sfl;
         while(tmp->next->next)
             tmp = tmp->next;
         int d = tmp->next->data;
@@ -95,43 +79,43 @@ int subclass::pop_back()
     }
 }
 
-bool subclass::push_forward(int d)
+bool push_forward(subforwardlist **sfl, int d)
 {
-    if(this->start == nullptr)
+    if(*sfl == nullptr)
     {
-        this->start = new subforwardlist;
-        this->start->data = d;
-        this->start->next = nullptr;
+        *sfl = new subforwardlist;
+        (*sfl)->data = d;
+        (*sfl)->next = nullptr;
         return true;
     }
     else
     {
         auto newsfl = new subforwardlist;
         newsfl->data = d;
-        newsfl->next = this->start;
-        this->start = newsfl;
+        newsfl->next = *sfl;
+        *sfl = newsfl;
         return true;
     }
 }
 
-int subclass::pop_forward()
+int pop_forward(subforwardlist **sfl)
 {
-    if(this->start == nullptr)
+    if(*sfl == nullptr)
         return 0;
     else
     {
         subforwardlist *tmp;
-        tmp = this->start->next;
-        int d = this->start->data;
-        delete this->start;
-        this->start = tmp;
+        tmp = (*sfl)->next;
+        int d = (*sfl)->data;
+        delete *sfl;
+        *sfl = tmp;
         return d;
     }
 }
 
-unsigned int subclass::size()
+unsigned int size(subforwardlist **sfl)
 {
-    subforwardlist *tmp = this->start;
+    subforwardlist *tmp = *sfl;
     unsigned int k = 0;
     while(tmp)
     {
@@ -141,22 +125,22 @@ unsigned int subclass::size()
     return k;
 }
 
-bool subclass::push_where(unsigned int where, int d)
+bool push_where(subforwardlist **sfl, unsigned int where, int d)
 {
     if(where == 0)
     {
-        this->push_forward(d);
+        push_forward(sfl, d);
         return true;
     }
     else
     {
-        if (this->start == nullptr)
+        if (*sfl == nullptr)
             return false;
         else
         {
-            subforwardlist *tmp = this->start;
-            unsigned int k = this->size();
-            tmp = this->start;
+            subforwardlist *tmp = *sfl;
+            unsigned int k = size(sfl);
+            tmp = *sfl;
             if (k < where)
                 return false;
             if (k >= where)
@@ -174,23 +158,23 @@ bool subclass::push_where(unsigned int where, int d)
     }
 }
 
-bool subclass::erase_where(unsigned int where)
+bool erase_where(subforwardlist **sfl, unsigned int where)
 {
-    if(this->start == nullptr)
+    if(*sfl == nullptr)
         return false;
     if(where == 0)
     {
-        int f = this->pop_forward();
+        int f = pop_forward(sfl);
         return true;
     }
     else
     {
-        unsigned int k = this->size()-1;
+        unsigned int k = size(sfl)-1;
         if (k < where)
             return false;
         else
         {
-            subforwardlist *tmp = this->start;
+            subforwardlist *tmp = *sfl;
             for (int i = 1; i < where; i++)
                 tmp = tmp->next;
             subforwardlist *newsfl = tmp->next->next;
@@ -201,32 +185,3 @@ bool subclass::erase_where(unsigned int where)
     }
 }
 
-void subclass::print()
-{
-    subforwardlist *tmp = this->start;
-    while(tmp)
-    {
-        cout << tmp->data << " ";
-        tmp = tmp->next;
-    }
-}
-
-int main()
-{
-    subclass s1;
-    s1.push_back(3);
-    s1.push_back(4);
-    s1.push_back(5);
-    s1.push_back(6);
-    s1.pop_back();
-    s1.push_forward(1);
-    s1.pop_forward();
-    s1.print();
-    cout << endl;
-    cout << s1.size() << endl;
-    s1.erase_where(0);
-    s1.print();
-    cout << endl;
-    s1.push_where(1, 10);
-    s1.print();
-}
