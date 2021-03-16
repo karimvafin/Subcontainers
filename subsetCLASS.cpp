@@ -1,8 +1,7 @@
 #include <iostream>
 using namespace std;
 
-// Закомменченные функции и структура данных list относятся к функции BFS, которая в
-// настоящий момент времени не рефакторена
+
 
 class subset_class
 {
@@ -20,10 +19,15 @@ private:
         list *prev;
     };
     subset_node* root;
+    list* l;
     void destructor(subset_node* sn);
     unsigned int size1(subset_node *sn);
     void add(subset_node *sn, int *mas, int *i);
     unsigned int height1(subset_node* sn);
+    void push_tree(subset_node *sn);
+    void processing(int* mas);
+
+
 public:
     subset_class();
     ~subset_class();
@@ -33,48 +37,14 @@ public:
     unsigned int size();
     unsigned int height();
     void DFS();
+    void BFS();
 };
 
-
-/*void push_tree (list *l, subset_node *sn)
-{
-    if (l == nullptr)
-    {
-        l = new list;
-        l->next = nullptr;
-        l->prev = nullptr;
-        l->tree = sn;
-    }
-    else
-    {
-        auto newlist = new list;
-        newlist->tree = sn;
-        newlist->next = nullptr;
-        while (l->next != nullptr)
-            l = l->next;
-        l->next = newlist;
-        newlist->prev = l;
-    }
-}
-
-subset_node* get_tree (list **l)
-{
-    if (*l == nullptr)
-        return nullptr;
-    else
-    {
-        subset_node *newsub = (*l)->tree;
-        *l = (*l)->next;
-        delete (*l)->prev;
-        if ((*l) != nullptr)
-            (*l)->prev = nullptr;
-        return newsub;
-    }
-}*/
 
 subset_class::subset_class()
 {
     this->root = nullptr;
+    this->l = nullptr;
 }
 
 void subset_class::destructor(subset_node* sn)
@@ -99,6 +69,7 @@ void subset_class::destructor(subset_node* sn)
 
 subset_class::~subset_class()
 {
+    delete l;
     if (this->root == nullptr)
         return;
     else
@@ -385,81 +356,67 @@ void subset_class::DFS()
     cout << endl;
 }
 
-/*void processing (subset_node *sn, int *mas, int *k, list *l)
+void subset_class::push_tree (subset_node *sn)
 {
-    mas[*k] = sn->key;
-    (*k)++;
-    if (sn->right != nullptr)
-        push_tree(l, sn->right);
-    if (sn->left != nullptr)
-        push_tree(l, sn->left);
-}
 
-int* BFS(subset_node *sn)
-{
-    if (sn == nullptr)
-        return nullptr;
+    if (l == nullptr)
+    {
+        l = new list;
+        l->next = nullptr;
+        l->prev = nullptr;
+        l->tree = sn;
+        cout << "Добавил дерево в начало" << endl;
+    }
     else
     {
-        int *mas = new int[size(sn)];
-        int k = 0;
-        list *l = new list;
-        do
-        {
-            push_tree(l, sn);
-            processing(get_tree(&l), mas, &k, l);
-            l = l->next;
-        }
-        while (l != nullptr);
-        return mas;
+        list* newlist = new list;
+        list* helplist = l;
+        newlist->tree = sn;
+        newlist->next = nullptr;
+        while (helplist->next != nullptr)
+            helplist = helplist->next;
+        helplist->next = newlist;
+        newlist->prev = helplist;
+        //cout << "Добавил дерево в конец" << endl;
     }
-}*/
-
-int main()
-{
-    subset_class tree;
-
-    //checking insert
-
-    tree.insert(60);
-    tree.insert(90);
-    tree.insert(50);
-    tree.insert(91);
-    tree.insert(6);
-    tree.insert(9);
-    tree.insert(3);
-    tree.insert(2);
-
-    tree.DFS();
-
-    //checking remove
-
-    /*tree.remove(60);
-    tree.remove(90);
-    tree.remove(1);
-    tree.remove(60);
-    tree.remove(3);
-    tree.remove(60);
-
-    tree.DFS();*/
-
-    //checking find
-
-    cout << tree.find(2) << " ";
-    cout << tree.find(7) << " ";
-    cout << tree.find(6) << " ";
-    cout << tree.find(91) << " ";
-    cout << tree.find(49) << endl;
-
-    //checking size && height
-
-    cout << tree.size() << " " << tree.height() << endl;
-    tree.insert(5);
-    tree.insert(100);
-    cout << tree.size() << " " << tree.height() << endl;
-    tree.remove(91);
-    tree.remove(6);
-    cout << tree.size() << " " << tree.height() << endl;
-
-    return 0;
 }
+
+void subset_class::processing (int* mas)
+{
+    int k = 0;
+    list* helplist;
+    while (l != nullptr)
+    {
+        helplist = l;
+        mas[k] =  helplist->tree->key;
+        k++;
+        if (helplist->tree->left != nullptr)
+            this->push_tree(helplist->tree->left);
+        if (helplist->tree->right != nullptr)
+            this->push_tree(helplist->tree->right);
+        l = l->next;
+        if (l != nullptr)
+            l->prev = nullptr;
+        delete helplist;
+    }
+}
+
+void subset_class::BFS()
+{
+    if (root == nullptr)
+        return;
+    else
+    {
+        unsigned int size = this->size();
+        int *mas = new int[size];
+        l = new list;
+        l->next = nullptr;
+        l->tree = root;
+        l->prev = nullptr;
+        processing(mas);
+        for (int i = 0; i < size; i++)
+            cout << mas[i] << " ";
+        delete [] mas;
+    }
+}
+
