@@ -8,6 +8,11 @@ public:
     ~subvector();
     bool resize(unsigned int new_capacity);
     bool push_back(int d);
+    void clear();
+    int pop_back();
+    void shrink_to_fit();
+    void print();
+    unsigned int get_top();
 private:
     int *mas;
     unsigned int top;
@@ -19,7 +24,6 @@ subvector::subvector()
     this->capacity = 0;
     this->top = 0;
     this->mas = nullptr;
-    return true;
 }
 
 subvector::~subvector()
@@ -27,82 +31,84 @@ subvector::~subvector()
     delete [] this->mas;
 }
 
-bool resize(unsigned int new_capacity)
+unsigned int subvector::get_top()
+{
+    return top;
+}
+
+bool subvector::resize(unsigned int new_capacity)
 {
     if (new_capacity > 0)
     {
         if (new_capacity >= this->capacity)
         {
             int *a = new int[new_capacity];
-            for (int i = 0; i < qv->top; i++)
-                a[i] = (qv->mas)[i];
-            delete[] qv->mas;
-            qv->mas = a;
-            qv->capacity = new_capacity;
+            for (int i = 0; i < this->top; i++)
+                a[i] = (this->mas)[i];
+            delete[] this->mas;
+            this->mas = a;
+            this->capacity = new_capacity;
             return true;
         }
+        return true;
     }
     else
     {
-        delete[] qv->mas;
-        init(qv);
+        delete[] this->mas;
+        this->mas = nullptr;
         return true;
     }
 }
 
-bool push_back(int d)
+bool subvector::push_back(int d)
 {
-    if (qv->capacity <= qv->top)
-        resize(qv, (qv->capacity + 5));
-    (qv->mas)[qv->top] = d;
-    qv->top ++;
+    if (this->capacity <= this->top)
+        this->resize(this->capacity + 5);
+    (this->mas)[this->top] = d;
+    this->top ++;
     return true;
 }
 
-void clear(subvector *qv)
+void subvector::clear()
 {
-    qv->top = 0;
+    this->top = 0;
 }
 
-int pop_back(subvector *qv)
+int subvector::pop_back()
 {
-    if (qv->top <= 0)
+    if (this->top <= 0)
         return 0;
     else
     {
-        qv->top --;
-        return (qv->mas)[qv->top];
+        this->top --;
+        return (this->mas)[this->top];
     }
 }
 
-void shrink_to_fit(subvector *qv)
+void subvector::shrink_to_fit()
 {
-    if (qv->top == 0)
+    if (this->top == 0)
     {
-        delete[] qv->mas;
-        init(qv);
+        delete[] this->mas;
+        this->mas = nullptr;
+        this->capacity = 0;
         return;
     }
-    if (qv->top >= qv->capacity)
+    if (this->top >= this->capacity)
         return;
     else
     {
-        int *a = new int[qv->top];
-        for(int i = 0; i < qv->top; i++)
-            a[i] = (qv->mas)[i];
-        delete[] qv->mas;
-        qv->mas = a;
-        qv->capacity = qv->top;
+        int *a = new int[this->top];
+        for(int i = 0; i < this->top; i++)
+            a[i] = (this->mas)[i];
+        delete[] this->mas;
+        this->mas = a;
+        this->capacity = this->top;
     }
 }
 
-void destructor(subvector *qv)
+void subvector::print()
 {
-    delete[] qv->mas;
-    init(qv);
-}
-
-int main()
-{
-    b = 10;
+    for (int i = 0; i < this->top; i++)
+        cout << this->mas[i] << " ";
 }
